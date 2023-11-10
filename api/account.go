@@ -3,7 +3,6 @@ package api
 import (
 	"fmt"
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/machingclee/2023-11-04-go-gin/internal/db"
 )

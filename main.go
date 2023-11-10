@@ -7,16 +7,17 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/machingclee/2023-11-04-go-gin/api"
 	"github.com/machingclee/2023-11-04-go-gin/internal/db"
-)
-
-const (
-	dbDriver      = "postgres"
-	dbSource      = "postgresql://pguser:pguser@127.0.0.1:5432/pgdb?sslmode=disable"
-	serverAddress = "127.0.0.1:8080"
+	"github.com/machingclee/2023-11-04-go-gin/util"
 )
 
 func main() {
-	conn, err := sql.Open(dbDriver, dbSource)
+	config, err := util.LoadConfig(".")
+
+	if err != nil {
+		log.Fatal("Cannot laod config", err)
+	}
+
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatal("Cannot connect to db", err)
 	}
@@ -24,7 +25,7 @@ func main() {
 	store := db.NewStore(conn)
 	server := api.NewServer(store)
 
-	err = server.Start(serverAddress)
+	err = server.Start(config.ServerAddress)
 
 	if err != nil {
 		log.Fatal("Cannot Start Server:", err)
