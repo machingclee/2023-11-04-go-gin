@@ -47,12 +47,14 @@ func (server *Server) Start(address string) error {
 func (server *Server) setupRouter() {
 	router := gin.Default()
 
-	router.POST("/account", server.createAccount)
-	router.POST("/transfers", server.createTransfer)
 	router.POST("/user", server.createUser)
 	router.POST("/users/login", server.loginUser)
-	router.GET("/account/:id", server.getAccount)
-	router.GET("/accounts", server.listAccount)
+
+	router.POST("/account", authMiddleware(server.tokenMaker), server.createAccount)
+	router.POST("/transfers", authMiddleware(server.tokenMaker), server.createTransfer)
+
+	router.GET("/account/:id", authMiddleware(server.tokenMaker), server.getAccount)
+	router.GET("/accounts", authMiddleware(server.tokenMaker), server.listAccount)
 
 	server.router = router
 }
