@@ -5,29 +5,35 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/machingclee/2023-11-04-go-gin/internal/db"
+	"github.com/machingclee/2023-11-04-go-gin/token"
+	"github.com/machingclee/2023-11-04-go-gin/util"
 )
 
 type Server struct {
-	store  db.Store
-	router *gin.Engine
+	config     *util.Config
+	store      db.Store
+	tokenMaker token.Maker
+	router     *gin.Engine
 }
 
-func NewServer(store db.Store) *Server {
-	server := &Server{store: store}
-	router := gin.Default()
+func NewServer(config *util.Config, store db.Store) (*Server, error) {
+	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, err
+	}
+	server := &Server{
+		config:     config,
+		store:      store,
+		tokenMaker: tokenMaker,
+	}
+
+	server.setupRouter()
 
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		v.RegisterValidation("currency", validCurrency)
 	}
 
-	router.POST("/account", server.createAccount)
-	router.POST("/transfers", server.createTransfer)
-	router.POST("/user", server.createUser)
-	router.GET("/account/:id", server.getAccount)
-	router.GET("/accounts", server.listAccount)
-
-	server.router = router
-	return server
+	return server, nil
 }
 
 func errorResponse(err error) gin.H {
@@ -37,4 +43,16 @@ func errorResponse(err error) gin.H {
 func (server *Server) Start(address string) error {
 	err := server.router.Run(address)
 	return err
+}
+func (server *Server) setupRouter() {
+	router := gin.Default()
+
+	router.POST("/account", server.createAccount)
+	router.POST("/transfers", server.createTransfer)
+	router.POST("/user", server.createUser)
+	router.POST("/users/login", server.loginUser)
+	router.GET("/account/:id", server.getAccount)
+	router.GET("/accounts", server.listAccount)
+
+	server.router = router
 }

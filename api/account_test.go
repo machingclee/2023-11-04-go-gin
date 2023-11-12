@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,6 +16,7 @@ import (
 
 func TestGetAccountAPI(t *testing.T) {
 	account := randomAccount()
+	config, err := util.LoadConfig("..")
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
@@ -25,7 +27,10 @@ func TestGetAccountAPI(t *testing.T) {
 		Times(1).
 		Return(account, nil)
 
-	server := NewServer(store)
+	server, err := NewServer(config, store)
+	if err != nil {
+		log.Fatal("Cannot create server", err)
+	}
 	recorder := httptest.NewRecorder()
 	url := fmt.Sprintf("/account/%d", account.ID)
 

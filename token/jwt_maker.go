@@ -8,7 +8,7 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-const minSecretKeySize = 32
+const minSecretKeySize = 10
 
 type JWTMaker struct {
 	secretKey string
