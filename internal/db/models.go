@@ -5,15 +5,17 @@
 package db
 
 import (
+	"database/sql"
 	"time"
 )
 
 type Account struct {
-	ID        int64     `json:"id"`
-	Owner     string    `json:"owner"`
-	Balance   int64     `json:"balance"`
-	Currency  string    `json:"currency"`
-	CreatedAt time.Time `json:"created_at"`
+	ID              int64          `json:"id"`
+	DeprecatedOwner sql.NullString `json:"_deprecated_owner"`
+	Balance         int64          `json:"balance"`
+	Currency        string         `json:"currency"`
+	CreatedAt       time.Time      `json:"created_at"`
+	Owner           sql.NullString `json:"owner"`
 }
 
 type Entry struct {
@@ -31,4 +33,13 @@ type Transfer struct {
 	// must be positive
 	Amount    int64     `json:"amount"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type User struct {
+	Username          string    `json:"username"`
+	HashedPassword    string    `json:"hashed_password"`
+	FullName          string    `json:"full_name"`
+	Email             string    `json:"email"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt         time.Time `json:"created_at"`
 }

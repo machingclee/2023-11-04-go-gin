@@ -1,15 +1,19 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 	"github.com/machingclee/2023-11-04-go-gin/internal/db"
 )
 
 type createAccountRequest struct {
 	Owner    string `json:"owner" binding:"required"`
-	Currency string `json:"currency" binding:"required,oneof=USD EUR"`
+	Currency string `json:"currency" binding:"required,currency"`
 }
 
 func (server *Server) createAccount(ctx *gin.Context) {
@@ -21,7 +25,7 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	}
 
 	arg := db.CreateAccountParams{
-		Owner:    req.Owner,
+		Owner:    sql.NullString{String: req.Owner, Valid: true},
 		Currency: req.Currency,
 		Balance:  0,
 	}
@@ -29,6 +33,9 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	account, err := server.store.CreateAccount(ctx, arg)
 
 	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			log.Println(pqErr.Code.Name())
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
@@ -59,7 +66,7 @@ func (server *Server) getAccount(ctx *gin.Context) {
 
 type listAccountRequest struct {
 	Page int32 `form:"page" binding:"required,min=1"`
-	Size int32 `form:"size" binding:"required,min=5,max=10"`
+	Size int32 `form:"size" binding:"required,min=5,max=100"`
 }
 
 func (server *Server) listAccount(ctx *gin.Context) {
