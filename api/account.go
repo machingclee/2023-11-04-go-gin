@@ -1,7 +1,6 @@
 package api
 
 import (
-	"database/sql"
 	"errors"
 	"fmt"
 	"log"
@@ -29,7 +28,7 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	arg := db.CreateAccountParams{
-		Owner:    sql.NullString{String: authPayload.Username, Valid: true},
+		Owner:    authPayload.Username,
 		Currency: req.Currency,
 		Balance:  0,
 	}
@@ -63,7 +62,7 @@ func (server *Server) getAccount(ctx *gin.Context) {
 
 	account, err := server.store.GetAccount(ctx, req.ID)
 
-	isOwner := account.Owner.Valid && (account.Owner.String == authPayload.Username)
+	isOwner := (account.Owner == authPayload.Username)
 
 	if !isOwner {
 		err := errors.New("Request user is not the account owner")
@@ -94,7 +93,7 @@ func (server *Server) listAccount(ctx *gin.Context) {
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 
 	arg := db.ListAccountsParams{
-		Owner:  sql.NullString{String: authPayload.Username, Valid: true},
+		Owner:  authPayload.Username,
 		Limit:  req.Size,
 		Offset: req.Size * (req.Page - 1),
 	}

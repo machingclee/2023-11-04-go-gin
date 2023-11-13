@@ -1,7 +1,6 @@
 package util
 
 import (
-	"database/sql"
 	"fmt"
 	"math/rand"
 	"strings"
@@ -14,20 +13,20 @@ func RandomInt(min, max int64) int64 {
 }
 
 func RandomEmail() string {
-	return fmt.Sprintf("%s@gmail.com", RandomString(10).String)
+	return fmt.Sprintf("%s@gmail.com", RandomString(10))
 }
 
-func RandomString(n int) sql.NullString {
+func RandomString(n int) string {
 	var sb strings.Builder
 	k := len(alphabet)
 	for i := 0; i < n; i++ {
 		c := alphabet[rand.Intn(k)]
 		sb.WriteByte(c)
 	}
-	return sql.NullString{String: sb.String(), Valid: true}
+	return sb.String()
 }
 
-func RandomOwner() sql.NullString {
+func RandomOwner() string {
 	return RandomString(6)
 }
 

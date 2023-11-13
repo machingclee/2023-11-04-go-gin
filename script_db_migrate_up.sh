@@ -1,4 +1,4 @@
-DB_URL=postgresql://pguser:pguser@127.0.0.1:5432/pgdb
+DB_URL=postgresql://root:ogCOdacTPw3suLPrhuHF@simple-bank.cin7oq1qemkd.ap-northeast-2.rds.amazonaws.com/simple_bank
 
 cd sql/schema
 goose postgres $DB_URL up
