@@ -50,6 +50,6 @@ func LoadConfig(parentDir string) (*Env, error) {
 	var envVariables = &Env{}
 	json.Unmarshal([]byte(secretString), envVariables)
 
-	fmt.Println("Getting env variable from aws screts ... ")
+	fmt.Println("Env variables retrieved")
 	return envVariables, nil
 }
