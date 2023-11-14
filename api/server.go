@@ -10,13 +10,13 @@ import (
 )
 
 type Server struct {
-	config     *util.Config
+	config     *util.Env
 	store      db.Store
 	tokenMaker token.Maker
 	router     *gin.Engine
 }
 
-func NewServer(config *util.Config, store db.Store) (*Server, error) {
+func NewServer(config *util.Env, store db.Store) (*Server, error) {
 	tokenMaker, err := token.NewJWTMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, err

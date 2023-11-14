@@ -1,4 +1,4 @@
-DB_URL=postgresql://pguser:pguser@127.0.0.1:5432/pgdb?sslmode=disable
+DB_URL=postgres://tqsmxzpn:bkluSc8c64S14JRc_GZbVNAkmyyGw8Id@rain.db.elephantsql.com/tqsmxzpn
 
 cd sql/schema
 goose postgres $DB_URL up

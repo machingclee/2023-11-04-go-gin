@@ -1,33 +1,55 @@
 package util
 
 import (
-	"github.com/spf13/viper"
+	"context"
+	"encoding/json"
+	"fmt"
+	"log"
+	"os"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 )
 
-type Config struct {
-	DBDriver            string        `mapstructure:"DB_DRIVER"`
-	DBSource            string        `mapstructure:"DB_SOURCE"`
-	ServerAddress       string        `mapstructure:"SERVER_ADDRESS"`
-	TokenSymmetricKey   string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
-	AccessTokenDuration time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+type Env struct {
+	DBDriver            string        `json:"DB_DRIVER"`
+	DBSource            string        `json:"DB_SOURCE"`
+	ServerAddress       string        `json:"SERVER_ADDRESS"`
+	TokenSymmetricKey   string        `json:"TOKEN_SYMMETRIC_KEY"`
+	AccessTokenDuration time.Duration `json:"ACCESS_TOKEN_DURATION"`
 }
 
-func LoadConfig(parentDir string) (*Config, error) {
-	viper.AddConfigPath(parentDir)
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
-
-	viper.AutomaticEnv()
-
-	err := viper.ReadInConfig()
-	if err != nil {
-		return nil, err
+func LoadConfig(parentDir string) (*Env, error) {
+	env := "local"
+	env_override := os.Getenv("env")
+	if env_override != "" {
+		env = env_override
 	}
-	config := Config{}
-	err = viper.Unmarshal(&config)
+
+	secretName := fmt.Sprintf("simple_bank_%s", env)
+	region := "ap-northeast-1"
+
+	fmt.Printf("Getting Environment variables [%s] from aws screts ... ", secretName)
+
+	config, err := config.LoadDefaultConfig(context.TODO(), config.WithRegion(region))
 	if err != nil {
-		return nil, err
+		log.Fatal(err)
 	}
-	return &config, nil
+	svc := secretsmanager.NewFromConfig(config)
+	input := &secretsmanager.GetSecretValueInput{
+		SecretId:     aws.String(secretName),
+		VersionStage: aws.String("AWSCURRENT"),
+	}
+	result, err := svc.GetSecretValue(context.TODO(), input)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	var secretString string = *result.SecretString
+	var envVariables = &Env{}
+	json.Unmarshal([]byte(secretString), envVariables)
+
+	fmt.Println("Getting env variable from aws screts ... ")
+	return envVariables, nil
 }

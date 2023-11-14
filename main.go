@@ -2,12 +2,11 @@ package main
 
 import (
 	"database/sql"
-	"log"
-
 	_ "github.com/lib/pq"
 	"github.com/machingclee/2023-11-04-go-gin/api"
 	"github.com/machingclee/2023-11-04-go-gin/internal/db"
 	"github.com/machingclee/2023-11-04-go-gin/util"
+	"log"
 )
 
 func main() {
