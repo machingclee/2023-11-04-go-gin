@@ -19,4 +19,4 @@ RUN chmod +x wait-for.sh
 
 EXPOSE 8080
 
-ENTRYPOINT [ "/app/migration-and-app-start.sh" ]
+CMD [ "/app/main" ]
