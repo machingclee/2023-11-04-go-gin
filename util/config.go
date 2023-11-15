@@ -1,11 +1,15 @@
 package util
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
+	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -21,7 +25,16 @@ type Env struct {
 	AccessTokenDuration time.Duration `json:"ACCESS_TOKEN_DURATION"`
 }
 
-func LoadConfig(parentDir string) (*Env, error) {
+type intermediateEnv struct {
+	AccessTokenDuration string `json:"ACCESS_TOKEN_DURATION"`
+}
+
+var ENV *Env = nil
+
+func LoadEnv() (*Env, error) {
+	if ENV != nil {
+		return ENV, nil
+	}
 	env := "local"
 	env_override := os.Getenv("env")
 	if env_override != "" {
@@ -47,9 +60,58 @@ func LoadConfig(parentDir string) (*Env, error) {
 		log.Fatal(err.Error())
 	}
 	var secretString string = *result.SecretString
-	var envVariables = &Env{}
-	json.Unmarshal([]byte(secretString), envVariables)
+	ENV = &Env{}
+	envIntermediate := &intermediateEnv{}
+	json.Unmarshal([]byte(secretString), ENV)
+	json.Unmarshal([]byte(secretString), envIntermediate)
+
+	ENV.AccessTokenDuration, err = time.ParseDuration(envIntermediate.AccessTokenDuration)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	fmt.Println("Env variables retrieved")
-	return envVariables, nil
+	return ENV, nil
+}
+
+func RunDbMigration() error {
+	workingDir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	env, err := LoadEnv()
+	if err != nil {
+		return err
+	}
+	fmt.Println("Running Migration Script")
+
+	os.Setenv("DB_URL", env.DBSource)
+	migrationScriptPath := filepath.Join(workingDir, "script_db_migrate_up.sh")
+
+	var cmd *exec.Cmd
+
+	if runtime.GOOS == "windows" {
+		var winBash string = `C:\Program Files\Git\usr\bin\sh.exe`
+		if where := os.Getenv("bin_where"); where != "" {
+			winBash = where
+		}
+		cmd = exec.Command(winBash, migrationScriptPath)
+	} else {
+		cmd = exec.Command(migrationScriptPath)
+	}
+
+	var outb, errb bytes.Buffer
+	cmd.Stdout = &outb
+	cmd.Stderr = &errb
+
+	err = cmd.Run()
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("out:", outb.String())
+	fmt.Println("err:", errb.String())
+
+	return nil
 }

@@ -10,7 +10,13 @@ import (
 )
 
 func main() {
-	config, err := util.LoadConfig(".")
+	err := util.RunDbMigration()
+
+	if err != nil {
+		log.Fatal("Migration Fails", err)
+	}
+
+	config, err := util.LoadEnv()
 
 	if err != nil {
 		log.Fatal("Cannot laod config", err)

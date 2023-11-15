@@ -16,7 +16,7 @@ import (
 
 func TestGetAccountAPI(t *testing.T) {
 	account := randomAccount()
-	config, err := util.LoadConfig("..")
+	config, err := util.LoadEnv()
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 

@@ -8,7 +8,7 @@ import (
 )
 
 func TestConfig(t *testing.T) {
-	config, err := LoadConfig("..")
+	config, err := LoadEnv()
 	require.NoError(t, err)
 	require.NotEmpty(t, config)
 	require.Equal(t, config.AccessTokenDuration, 15*time.Minute)
