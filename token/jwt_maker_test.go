@@ -20,10 +20,10 @@ func TestJwtMaker(t *testing.T) {
 	issuedAt := time.Now()
 	expiredAt := issuedAt.Add(duration)
 
-	token, err := jwtMaker.CreateToken(username, duration)
+	token, payload, err := jwtMaker.CreateToken(username, duration)
 	require.NoError(t, err)
-
-	payload, err := jwtMaker.VerifyToken(token)
+	require.NotEmpty(t, payload)
+	payload, err = jwtMaker.VerifyToken(token)
 	fmt.Println("payload uuid", payload.ID)
 	require.NoError(t, err)
 	require.NotEmpty(t, payload)
@@ -36,10 +36,11 @@ func TestJwtMaker(t *testing.T) {
 func TestExpiredJWToken(t *testing.T) {
 	maker, err := NewJWTMaker(util.RandomString(32))
 	require.NoError(t, err)
-	token, err := maker.CreateToken(util.RandomOwner(), -time.Minute)
+	token, payload, err := maker.CreateToken(util.RandomOwner(), -time.Minute)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
-	payload, err := maker.VerifyToken(token)
+	require.NotEmpty(t, payload)
+	payload, err = maker.VerifyToken(token)
 	require.Error(t, err)
 	require.Nil(t, payload)
 }

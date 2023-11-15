@@ -18,15 +18,17 @@ import (
 )
 
 type Env struct {
-	DBDriver            string        `json:"DB_DRIVER"`
-	DBSource            string        `json:"DB_SOURCE"`
-	ServerAddress       string        `json:"SERVER_ADDRESS"`
-	TokenSymmetricKey   string        `json:"TOKEN_SYMMETRIC_KEY"`
-	AccessTokenDuration time.Duration `json:"ACCESS_TOKEN_DURATION"`
+	DBDriver             string        `json:"DB_DRIVER"`
+	DBSource             string        `json:"DB_SOURCE"`
+	ServerAddress        string        `json:"SERVER_ADDRESS"`
+	TokenSymmetricKey    string        `json:"TOKEN_SYMMETRIC_KEY"`
+	AccessTokenDuration  time.Duration `json:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenDuration time.Duration `json:"REFRESH_TOKEN_DURATION"`
 }
 
 type intermediateEnv struct {
-	AccessTokenDuration string `json:"ACCESS_TOKEN_DURATION"`
+	AccessTokenDuration  string `json:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenDuration string `json:"REFRESH_TOKEN_DURATION"`
 }
 
 var ENV *Env = nil
@@ -66,6 +68,10 @@ func LoadEnv() (*Env, error) {
 	json.Unmarshal([]byte(secretString), envIntermediate)
 
 	ENV.AccessTokenDuration, err = time.ParseDuration(envIntermediate.AccessTokenDuration)
+	if err != nil {
+		log.Fatal(err)
+	}
+	ENV.RefreshTokenDuration, err = time.ParseDuration(envIntermediate.RefreshTokenDuration)
 	if err != nil {
 		log.Fatal(err)
 	}
